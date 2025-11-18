@@ -280,6 +280,19 @@ class VoiceAnnouncer {
     }
   }
 
+  Future<void> waitForIdle({
+    Duration timeout = const Duration(seconds: 3),
+    Duration pollInterval = const Duration(milliseconds: 60),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (_isSpeaking || _pendingSpeech != null) {
+      if (DateTime.now().isAfter(deadline)) {
+        break;
+      }
+      await Future.delayed(pollInterval);
+    }
+  }
+
   bool _shouldRespectCooldown(DateTime now) {
     return now.difference(_lastAnnouncement) < _minimumPause;
   }
