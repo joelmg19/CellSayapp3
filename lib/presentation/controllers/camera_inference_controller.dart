@@ -101,6 +101,7 @@ class CameraInferenceController extends ChangeNotifier {
   DateTime? _lastSignReadAt;
   bool _speakingLocked = false;
   Timer? _signResetTimer;
+  static const Duration _signSpeechGap = Duration(milliseconds: 350);
   // --- FIN DE VARIABLES ORIGINALES ---
 
   // --- GETTERS ORIGINALES ---
@@ -528,6 +529,16 @@ class CameraInferenceController extends ChangeNotifier {
       _lastSignReadAt = detectionTime;
       _speakingLocked = true;
       _signResetTimer?.cancel();
+
+      await _voiceAnnouncer.waitForIdle(
+        timeout: const Duration(seconds: 4),
+      );
+      if (_isDisposed) return;
+
+      if (_signSpeechGap > Duration.zero) {
+        await Future.delayed(_signSpeechGap);
+        if (_isDisposed) return;
+      }
 
       try {
         await _voiceAnnouncer.speakMessage(
