@@ -319,7 +319,7 @@ class CameraInferenceController extends ChangeNotifier {
     unawaited(
       _voiceAnnouncer.processDetections(
         filtered,
-        isVoiceEnabled: _isVoiceEnabled && !_isVoiceFeedbackPaused,
+        isVoiceEnabled: _isVoiceEnabled,
         insights: processed,
         alerts: _safetyAlerts,
       ),
@@ -545,6 +545,7 @@ class CameraInferenceController extends ChangeNotifier {
           cleaned.formattedText,
           bypassCooldown: true,
           storeAsLastMessage: false,
+          ignorePause: true,
         );
         debugPrint(
           'OCR/VOICE -> announced sign canonical="${cleaned.canonicalText}"',
