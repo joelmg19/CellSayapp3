@@ -45,7 +45,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   Future<void> _readMenu() async {
     await _speak(
-      'Menú principal. Opciones: Dinero, Dinero offline, Objetos, Lectura, Hora y Clima. Diga una opción.',
+      'Menú principal. Opciones: Dinero, Objetos, Lectura, Hora y Clima. Diga una opción.',
     );
   }
 
@@ -86,14 +86,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
   void _handleVoice(String words) async {
     final t = words.toLowerCase();
-    if (t.contains('dinero') &&
-        (t.contains('offline') || t.contains('local') || t.contains('internet'))) {
-      await _stt.stop();
-      setState(() => _isListening = false);
-      if (!mounted) return;
-      Navigator.pushNamed(context, '/money-offline');
-      return;
-    }
     if (t.contains('dinero')) {
       await _stt.stop();
       setState(() => _isListening = false);
@@ -150,31 +142,31 @@ class _MenuScreenState extends State<MenuScreen> {
         label: 'Dinero (API)',
         icon: Icons.attach_money_rounded,
         onTap: () => Navigator.pushNamed(context, '/money'),
-      ),
-      _BigButton(
-        label: 'Dinero Offline',
-        icon: Icons.money_off,
-        onTap: () => Navigator.pushNamed(context, '/money-offline'),
+        semanticsHint: 'Detector de billetes con conexión a internet',
       ),
       _BigButton(
         label: 'Objetos',
         icon: Icons.center_focus_strong_rounded,
         onTap: () => Navigator.pushNamed(context, '/camera'),
+        semanticsHint: 'Cámara para detección de objetos',
       ),
       _BigButton(
         label: 'Lectura',
         icon: Icons.menu_book_rounded,
         onTap: () => Navigator.pushNamed(context, '/text-reader'),
+        semanticsHint: 'Lectura de texto usando la cámara',
       ),
       _BigButton(
         label: 'Hora',
         icon: Icons.access_time_rounded,
         onTap: _sayTime,
+        semanticsHint: 'Anuncia la hora actual',
       ),
       _BigButton(
         label: 'Clima',
         icon: Icons.cloud_outlined,
         onTap: _sayWeather,
+        semanticsHint: 'Anuncia el clima actual',
       ),
     ];
 
@@ -212,10 +204,15 @@ class _MenuScreenState extends State<MenuScreen> {
                   Row(
                     children: [
                       const Spacer(),
-                      FilledButton.icon(
-                        onPressed: _startTalkback,
-                        icon: Icon(_isListening ? Icons.hearing_disabled : Icons.hearing),
-                        label: Text(_isListening ? 'Talback ON' : 'Talback'),
+                      Semantics(
+                        label: 'Activar o desactivar asistencia por voz',
+                        hint: 'Doble toque para alternar el asistente hablado',
+                        button: true,
+                        child: FilledButton.icon(
+                          onPressed: _startTalkback,
+                          icon: Icon(_isListening ? Icons.hearing_disabled : Icons.hearing),
+                          label: Text(_isListening ? 'TalkBack activado' : 'TalkBack'),
+                        ),
                       ),
                     ],
                   ),
@@ -239,18 +236,29 @@ class _BigButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  const _BigButton({required this.label, required this.icon, required this.onTap});
+  final String? semanticsHint;
+  const _BigButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.semanticsHint,
+  });
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 22),
-      label: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-      ),
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Semantics(
+      button: true,
+      label: label,
+      hint: semanticsHint ?? 'Doble toque para abrir $label',
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 22),
+        label: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+        ),
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
       ),
     );
   }
